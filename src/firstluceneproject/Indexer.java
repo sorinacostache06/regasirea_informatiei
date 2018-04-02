@@ -9,7 +9,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.IOException;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
@@ -17,51 +18,62 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.analysis.ro.RomanianAnalyzer;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.analysis.Analyzer;
-
+import java.util.Scanner;
+import org.apache.lucene.document.TextField;
+import org.apache.lucene.util.Version;
 /**
  *
  * @author Gogosica
  */
 public class Indexer{
+    //este un tip de obiect care creeaza si pastreaza indexul
     private IndexWriter writer;
     
     public Indexer(String indexDirectoryPath) throws IOException{
-        Directory indexDirectory = FSDirectory.open(new File(indexDirectoryPath));
-        Analyzer analyzer = new RomanianAnalyzer(Version.LUCENE_46);
-        writer = new IndexWriter(indexDirectory, new IndexWriterConfig(Version.LUCENE_46, analyzer));      
+        Path path = Paths.get(indexDirectoryPath);
+        Directory indexDirectory = FSDirectory.open(path);
+        Analyzer analyzer = new RomanianAnalyzer();
+        analyzer.setVersion(Version.LUCENE_7_2_0);
+        writer = new IndexWriter(indexDirectory, new IndexWriterConfig(analyzer));      
     }
     
     public void close() throws CorruptIndexException, IOException {
         writer.close();
     }
     
+    
     private Document getDocument(File file) throws IOException {
+        //pe obiectele de tip documnete de fac indexarea si searchul
         Document document = new Document();
+        String content = new Scanner(new File(file.getPath())).useDelimiter("\\Z").next();
+       String new_content;
+        System.out.println(content);
+        StopWords stopwords = new StopWords();
+        new_content = stopwords.removeStopWords(content);
+        System.out.println(new_content);
         
+        //Field este o sectiune a Documentului -nume, valoare, tip
         //index file contents
-        Field contentField = new Field(LuceneConstants.CONTENTS, new FileReader(file));
+        Field contentField = new Field(LuceneConstants.CONTENTS, new_content, TextField.TYPE_NOT_STORED);
         
         //index file name
-        Field fileNameField = new Field(LuceneConstants.FILE_NAME, 
-            file.getName(), Field.Store.YES, Field.Index.NOT_ANALYZED);
+        Field fileNameField = new Field(LuceneConstants.FILE_NAME, file.getName(), TextField.TYPE_STORED);
         
         //index file path
         
         Field filePathField = new Field(LuceneConstants.FILE_PATH,
-                file.getCanonicalPath(), Field.Store.YES, Field.Index.NOT_ANALYZED);
+                file.getCanonicalPath(), TextField.TYPE_STORED);
         
         document.add(contentField);
         document.add(fileNameField);
         document.add(filePathField);
-        
         return document;
     }
     
     private void indexFile(File file) throws IOException {
-        System.out.println("Indexing "+ file.getCanonicalPath());
+        System.out.println("Indexeaza "+ file.getCanonicalPath());
         Document document = getDocument(file);
         writer.addDocument(document);
     }
@@ -77,6 +89,13 @@ public class Indexer{
             }
         }
         return writer.numDocs();
+    }
+    
+    public void deleteIndex(String dataDirPath)
+            throws IOException {
+        File[] files = new File(dataDirPath).listFiles();
+        for(int i=0; i < files.length; i++) 
+            files[i].delete();
     }
 }
 

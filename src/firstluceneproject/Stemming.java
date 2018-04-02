@@ -20,7 +20,7 @@ public class Stemming {
         StringBuffer result = new StringBuffer();
         if (text != null && text.trim().length()>0){
             StringReader tReader = new StringReader(text);
-            RomanianAnalyzer analyzer = new RomanianAnalyzer(Version.LUCENE_46);
+            RomanianAnalyzer analyzer = new RomanianAnalyzer();
             TokenStream tStream = analyzer.tokenStream("contents", tReader);
             CharTermAttribute term = tStream.addAttribute(CharTermAttribute.class);
             tStream.reset();

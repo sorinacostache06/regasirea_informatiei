@@ -6,6 +6,7 @@
 package firstluceneproject;
 
 import java.io.IOException;
+import java.util.Scanner;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -22,26 +23,22 @@ public class LuceneTester {
     Searcher searcher;
     Stemming stemming;
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParseException {
       LuceneTester tester;
       try {
          tester = new LuceneTester();
          tester.createIndex();
-         tester.search("mama");
-         StopWords stopwords = new StopWords();
-         String text = "Aceasta este o propozitie cu multe cuvinte de legatura!";
-         System.out.println(stopwords.removeStopWords(text));
-//         tester.stem("mam");
+         tester.search("cuţit");
+         tester.stem("mămicilor mele le datorez iubirile");
       } catch (IOException e) {
          e.printStackTrace();
-      } catch (ParseException p){
-         p.printStackTrace();
-      }
+      } 
    }
     
     private void createIndex() throws IOException {
         indexer = new Indexer(indexDir);
         int numIndexed;
+        //indexer.deleteIndex(indexDir);
         numIndexed = indexer.createIndex(dataDir, new TextFileFilter());
         indexer.close();
         System.out.println(numIndexed + " programe indexate");

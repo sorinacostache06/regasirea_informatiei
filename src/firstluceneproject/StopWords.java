@@ -5,19 +5,17 @@
  */
 package firstluceneproject;
 
-import java.io.File;
 import java.io.IOException;
-
+import java.io.StringReader;
 import org.apache.lucene.analysis.ro.RomanianAnalyzer;
-import org.apache.lucene.analysis.util.CharArraySet;
 import org.apache.lucene.util.Version;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.StopFilter;
-import org.apache.lucene.analysis.TokenFilter ;
 import org.apache.lucene.analysis.tokenattributes.*;
-import java.io.StringReader;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.util.AttributeFactory;
+import org.apache.lucene.util.AttributeSource;
 
 /**
  *
@@ -26,22 +24,24 @@ import java.io.StringReader;
 public class StopWords {
     
     public String removeStopWords(String textFile) throws IOException {
+    AttributeFactory factory = AttributeFactory.DEFAULT_ATTRIBUTE_FACTORY;
     //store string in a hash
     CharArraySet stopWords = RomanianAnalyzer.getDefaultStopSet();
     
     //enumerates the sequence of tokens
-    TokenStream tokenStream = new StandardTokenizer(Version.LUCENE_46, new StringReader(textFile.trim()));
+    StandardTokenizer tokenStream = new StandardTokenizer(factory);
+    tokenStream.setReader(new StringReader(textFile));
     
-    //removes stop works from a string
-    tokenStream = new StopFilter(Version.LUCENE_46, tokenStream, stopWords);
-    
-    StringBuilder sb = new StringBuilder();
-    CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+        //removes stop works from a string
+    StopFilter stopFilter = new StopFilter(tokenStream, stopWords);
     tokenStream.reset();
-    while (tokenStream.incrementToken()) {
+    StringBuilder sb = new StringBuilder();
+    CharTermAttribute charTermAttribute = stopFilter.addAttribute(CharTermAttribute.class);
+    while (stopFilter.incrementToken()) {
         String term = charTermAttribute.toString();
         sb.append(term + " ");
     }
+    stopFilter.reset();
     return sb.toString();
 }
 }

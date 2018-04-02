@@ -6,11 +6,12 @@
 package firstluceneproject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.lucene.analysis.ro.RomanianAnalyzer;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -31,11 +32,11 @@ public class Searcher {
     Query query;
     
     public Searcher(String indexDirectoryPath) throws IOException {
-        Directory dir = FSDirectory.open(new File(indexDirectoryPath));
+        Path path = Paths.get(indexDirectoryPath);
+        Directory dir = FSDirectory.open(path);
         DirectoryReader indexDirectory = DirectoryReader.open(dir);
         indexSearcher = new IndexSearcher(indexDirectory);
-        queryParser = new QueryParser(Version.LUCENE_46, LuceneConstants.CONTENTS,
-            new RomanianAnalyzer(Version.LUCENE_46));
+        queryParser = new QueryParser(LuceneConstants.CONTENTS, new RomanianAnalyzer());
     }
     
     //top docs returneaza numarul total de rezultate
@@ -44,10 +45,10 @@ public class Searcher {
         return indexSearcher.search(query, LuceneConstants.MAX_SEARCH);
     }
     
-//    public Document getDocument(ScoreDoc scoreDoc)
-//            throws IOException {
-//        return indexSearcher.doc(scoreDoc.doc);
-//    }
+    public Document getDocument(ScoreDoc scoreDoc)
+            throws IOException {
+        return indexSearcher.doc(scoreDoc.doc);
+    }
     
     public void close() throws IOException {
         //
