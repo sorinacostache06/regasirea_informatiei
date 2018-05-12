@@ -20,7 +20,7 @@ public class Stemming {
         StringBuffer result = new StringBuffer();
         if (text != null && text.trim().length()>0){
             StringReader tReader = new StringReader(text);
-            RomanianAnalyzer analyzer = new RomanianAnalyzer();
+            RomanianASCIIAnalyzer analyzer = new RomanianASCIIAnalyzer();
             TokenStream tStream = analyzer.tokenStream("contents", tReader);
             CharTermAttribute term = tStream.addAttribute(CharTermAttribute.class);
             tStream.reset();
@@ -33,7 +33,7 @@ public class Stemming {
                 System.out.println("Error: "+ioe.getMessage());
             }
         }
-
+        //System.out.println("stemming: " + result.toString());
         // If, for some reason, the stemming did not happen, return the original text
         if (result.length()==0)
             result.append("nimic");

@@ -19,7 +19,7 @@ public class TextFileFilter implements FileFilter {
         if (pathname.getName().toLowerCase().endsWith(".txt") || 
                 pathname.getName().toLowerCase().endsWith(".word") ||
                 pathname.getName().toLowerCase().endsWith(".rtf") ||
-                pathname.getName().toLowerCase().endsWith(".xml")) {
+                pathname.getName().toLowerCase().endsWith(".html")) {
             return true;
         } else return false;
    }

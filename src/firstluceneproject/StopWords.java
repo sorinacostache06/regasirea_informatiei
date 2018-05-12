@@ -14,6 +14,9 @@ import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.analysis.core.StopFilter;
 import org.apache.lucene.analysis.tokenattributes.*;
 import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.LowerCaseFilter;
+import org.apache.lucene.analysis.core.LowerCaseTokenizer;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.util.AttributeFactory;
 import org.apache.lucene.util.AttributeSource;
 
@@ -26,22 +29,29 @@ public class StopWords {
     public String removeStopWords(String textFile) throws IOException {
     AttributeFactory factory = AttributeFactory.DEFAULT_ATTRIBUTE_FACTORY;
     //store string in a hash
-    CharArraySet stopWords = RomanianAnalyzer.getDefaultStopSet();
+    CharArraySet stopWords = RomanianASCIIAnalyzer.getDefaultStopSet();
+    stopWords.add("și");
+    stopWords.add("în");
     
     //enumerates the sequence of tokens
-    StandardTokenizer tokenStream = new StandardTokenizer(factory);
+    LowerCaseTokenizer tokenStream = new LowerCaseTokenizer();
     tokenStream.setReader(new StringReader(textFile));
     
-        //removes stop works from a string
-    StopFilter stopFilter = new StopFilter(tokenStream, stopWords);
+    //removes stop works from a string
+    StopFilter stopFilter = new StopFilter(new LowerCaseFilter(tokenStream), stopWords);
     tokenStream.reset();
+    TokenStream a = new PorterStemFilter(stopFilter);
+    
     StringBuilder sb = new StringBuilder();
-    CharTermAttribute charTermAttribute = stopFilter.addAttribute(CharTermAttribute.class);
+    
+    CharTermAttribute token = stopFilter.getAttribute(CharTermAttribute.class);
+    
     while (stopFilter.incrementToken()) {
-        String term = charTermAttribute.toString();
+        String term = token.toString();
         sb.append(term + " ");
     }
-    stopFilter.reset();
+    //System.out.print("stop words " + sb.toString());
+    tokenStream.reset();
     return sb.toString();
 }
 }

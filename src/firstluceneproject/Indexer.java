@@ -34,7 +34,7 @@ public class Indexer{
     public Indexer(String indexDirectoryPath) throws IOException{
         Path path = Paths.get(indexDirectoryPath);
         Directory indexDirectory = FSDirectory.open(path);
-        Analyzer analyzer = new RomanianAnalyzer();
+        Analyzer analyzer = new RomanianASCIIAnalyzer();
         analyzer.setVersion(Version.LUCENE_7_2_0);
         writer = new IndexWriter(indexDirectory, new IndexWriterConfig(analyzer));      
     }
@@ -49,14 +49,20 @@ public class Indexer{
         Document document = new Document();
         String content = new Scanner(new File(file.getPath())).useDelimiter("\\Z").next();
        String new_content;
-        System.out.println(content);
+        //System.out.println(content);
         StopWords stopwords = new StopWords();
         new_content = stopwords.removeStopWords(content);
-        System.out.println(new_content);
+        //System.out.println(new_content);
+        
+        String stem;
+        Stemming stemming = new Stemming();
+        stem = stemming.Stemming(new_content);
+        
+        //System.out.println(stem);
         
         //Field este o sectiune a Documentului -nume, valoare, tip
         //index file contents
-        Field contentField = new Field(LuceneConstants.CONTENTS, new_content, TextField.TYPE_NOT_STORED);
+        Field contentField = new Field(LuceneConstants.CONTENTS, stem, TextField.TYPE_NOT_STORED);
         
         //index file name
         Field fileNameField = new Field(LuceneConstants.FILE_NAME, file.getName(), TextField.TYPE_STORED);
@@ -69,12 +75,14 @@ public class Indexer{
         document.add(contentField);
         document.add(fileNameField);
         document.add(filePathField);
+        
         return document;
     }
     
     private void indexFile(File file) throws IOException {
-        System.out.println("Indexeaza "+ file.getCanonicalPath());
+        //System.out.println("Indexeaza "+ file.getCanonicalPath());
         Document document = getDocument(file);
+        
         writer.addDocument(document);
     }
     
@@ -89,13 +97,6 @@ public class Indexer{
             }
         }
         return writer.numDocs();
-    }
-    
-    public void deleteIndex(String dataDirPath)
-            throws IOException {
-        File[] files = new File(dataDirPath).listFiles();
-        for(int i=0; i < files.length; i++) 
-            files[i].delete();
     }
 }
 
